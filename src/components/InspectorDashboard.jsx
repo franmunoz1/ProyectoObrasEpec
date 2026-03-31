@@ -16,6 +16,7 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const C = {
@@ -179,8 +180,10 @@ export default function DashboardInspector({
   stats = { obrasAsignadas: 4, inspeccionesEstemes: 7, diasSinRegistro: 2 },
   onRegistrar   = () => alert('Ir a registrar inspección'),
   onListado     = () => alert('Ir al listado de obras'),
-  onCerrarSesion = () => alert('Cerrar sesión'),
+  onCerrarSesion,
 }) {
+  const { logout } = useAuth()
+  const handleCerrarSesion = onCerrarSesion || logout
   const [hovLogout, setHovLogout] = useState(false)
   const hora = new Date().getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches'
@@ -267,7 +270,7 @@ export default function DashboardInspector({
 
             {/* Cerrar sesión */}
             <button
-              onClick={onCerrarSesion}
+              onClick={handleCerrarSesion}
               onMouseEnter={() => setHovLogout(true)}
               onMouseLeave={() => setHovLogout(false)}
               style={{
