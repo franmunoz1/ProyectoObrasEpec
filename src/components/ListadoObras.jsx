@@ -39,6 +39,8 @@ const OBRAS_DATA = [
     contratista: 'Empresas Unidas SA',
     fechaInicio: '2025-02-10',
     fechaFin: '2026-12-30',
+    lat: -31.3466,
+    lng: -64.2280,
     descripcion: 'Ampliación de subestación transformadora con instalación de nuevos equipos y obras civiles.',
     registros: [
       {
@@ -69,6 +71,8 @@ const OBRAS_DATA = [
     contratista: 'RedDistribuciones SA',
     fechaInicio: '2025-06-01',
     fechaFin: '2026-05-20',
+    lat: -31.4267,
+    lng: -64.1898,
     descripcion: 'Tendido de nueva red de media tensión para mejorar la calidad del suministro en zona residencial.',
     registros: [
       {
@@ -94,6 +98,8 @@ const OBRAS_DATA = [
     contratista: 'Construcciones y Servicios SRL',
     fechaInicio: '2024-08-15',
     fechaFin: '2025-11-30',
+    lat: -31.4201,
+    lng: -64.1888,
     descripcion: 'Reparación estructural y puesta a norma del edificio de oficinas principales.',
     registros: [
       {
@@ -118,6 +124,8 @@ const OBRAS_DATA = [
     presupuesto: 'ARS 77.000.000',
     contratista: 'Campo y Energía SA',
     fechaInicio: '2025-09-10',
+    lat: -31.3400,
+    lng: -64.2200,
     fechaFin: '2026-10-20',
     descripcion: 'Sustitución de postes y conductores en áreas rurales con alto índice de fallas.',
     registros: [

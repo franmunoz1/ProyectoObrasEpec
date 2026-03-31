@@ -228,6 +228,22 @@ const ObraDetalleTecnico = () => {
                   </p>
                 </div>
 
+                {/* Bloque: Mapa interactivo */}
+                {obra.lat != null && obra.lng != null && (
+                  <div className="bg-white border border-[#d6d3c8] rounded-xl p-6">
+                    <h3 className="font-mono text-sm font-bold uppercase tracking-widest text-[#0B5A50] mb-3">Ubicación de obra</h3>
+                    <div className="w-full aspect-[16/9] rounded-lg overflow-hidden border border-[#d6d3c8]">
+                      <iframe
+                        title="Mapa de ubicación"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${obra.lng-0.02}%2C${obra.lat-0.015}%2C${obra.lng+0.02}%2C${obra.lat+0.015}&layer=mapnik&marker=${obra.lat}%2C${obra.lng}`}
+                        style={{ border: 0, width: '100%', height: '100%' }}
+                        loading="lazy"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Coordenadas: {obra.lat.toFixed(6)}, {obra.lng.toFixed(6)}</p>
+                  </div>
+                )}
+
               </div>
 
               {/* Columna Derecha: Registros y Fotos */}
