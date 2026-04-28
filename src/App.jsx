@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Home from './components/Home';
 import Login from './components/Login';
 import ListadoObras from './components/ListadoObras';
+import CargarArchivos from './components/CargarArchivos';
 import InspectorDashboard from './components/InspectorDashboard';
 import RegistroInspeccion from './components/RegistroInspeccion';
 import ObraDetalleTecnico from './components/ObraDetalleTecnico';
@@ -192,6 +193,7 @@ function AuthenticatedApp() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Home />} />
           <Route path="/obras" element={<ListadoObras />} />
+          <Route path="/cargar-archivos" element={<CargarArchivos />} />
           <Route path="/inspector" element={<InspectorDashboard />} />
           <Route path="/registro-inspeccion" element={<RegistroInspeccion />} />
           <Route path="/obra/:id/tecnico" element={<ObraDetalleTecnico />} />

@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
+const API_BASE_URL = import.meta.env.VITE_API_OBRAS_URL || 'http://127.0.0.1:8000';
 
 // ── Componentes Visuales ─────────────────────────────────────────────────────
 function Badge({ children, variant = 'default' }) {
@@ -22,146 +24,200 @@ function Badge({ children, variant = 'default' }) {
   );
 }
 
-const OBRAS_DATA = [
-  {
-    id: 1,
-    nroLp: '5123',
-    nombre: 'Ampliación ET Córdoba Norte - Transformador 3',
-    avanceFisico: 75,
-    avanceFinanciero: 60,
-    desvioCurva: 5.4,
-    estado: 'En Ejecución',
-    departamento: 'Transmisión',
-    tipoObra: 'Transmisión',
-    prorroga: 8,
-    inspectorAsignado: 'Matias Chavez',
-    presupuesto: 'ARS 250.000.000',
-    contratista: 'Empresas Unidas SA',
-    fechaInicio: '2025-02-10',
-    fechaFin: '2026-12-30',
-    lat: -31.3466,
-    lng: -64.2280,
-    descripcion: 'Ampliación de subestación transformadora con instalación de nuevos equipos y obras civiles.',
-    registros: [
-      {
-        fecha: '2026-02-28',
-        descripcion: 'Instalación de apoyo estructural completa, sin observaciones mayores.',
-        fotos: ['https://via.placeholder.com/150?text=Foto+1', 'https://via.placeholder.com/150?text=Foto+2']
-      },
-      {
-        fecha: '2026-03-31',
-        descripcion: 'Falta de armaduras detectada en el sector norte; posible impacto en item 5.2 por 10 días.',
-        fotos: ['https://via.placeholder.com/150?text=Foto+3']
+function MultiSelectFilter({ label, options, selectedValues, onChange, allLabel }) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function onClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setOpen(false);
       }
-    ]
-  },
-  {
-    id: 2,
-    nroLp: '5555',
-    nombre: 'Nueva Red MT - Barrio Villa Belgrano',
-    avanceFisico: 30,
-    avanceFinanciero: 15,
-    desvioCurva: 12.8,
-    estado: 'Inicio de Obra',
-    departamento: 'Distribución',
-    tipoObra: 'Distribución',
-    prorroga: 0,
-    inspectorAsignado: 'Lucía Fernández',
-    presupuesto: 'ARS 120.000.000',
-    contratista: 'RedDistribuciones SA',
-    fechaInicio: '2025-06-01',
-    fechaFin: '2026-05-20',
-    lat: -31.4267,
-    lng: -64.1898,
-    descripcion: 'Tendido de nueva red de media tensión para mejorar la calidad del suministro en zona residencial.',
-    registros: [
-      {
-        fecha: '2026-03-20',
-        descripcion: 'Avance de movimiento de suelo 30 %, sin bloqueos.',
-        fotos: ['https://via.placeholder.com/150?text=Foto+A', 'https://via.placeholder.com/150?text=Foto+B']
-      }
-    ]
-  },
-  {
-    id: 3,
-    nroLp: '5678',
-    nombre: 'Mantenimiento Civil Edificio Central',
-    avanceFisico: 100,
-    avanceFinanciero: 95,
-    desvioCurva: 2.1,
-    estado: 'Finalizada',
-    departamento: 'Civil',
-    tipoObra: 'Civil',
-    prorroga: 0,
-    inspectorAsignado: 'Facundo Ruiz',
-    presupuesto: 'ARS 48.000.000',
-    contratista: 'Construcciones y Servicios SRL',
-    fechaInicio: '2024-08-15',
-    fechaFin: '2025-11-30',
-    lat: -31.4201,
-    lng: -64.1888,
-    descripcion: 'Reparación estructural y puesta a norma del edificio de oficinas principales.',
-    registros: [
-      {
-        fecha: '2025-11-28',
-        descripcion: 'Obra finalizada y aprobada, sin observaciones.',
-        fotos: ['https://via.placeholder.com/150?text=Foto+C']
-      }
-    ]
-  },
-  {
-    id: 4,
-    nroLp: '5789',
-    nombre: 'Recambio de Postación - Zona Rural',
-    avanceFisico: 10,
-    avanceFinanciero: 5,
-    desvioCurva: 20.3,
-    estado: 'Adjudicada',
-    departamento: 'Distribución',
-    tipoObra: 'Distribución',
-    prorroga: 5,
-    inspectorAsignado: 'Gabriela López',
-    presupuesto: 'ARS 77.000.000',
-    contratista: 'Campo y Energía SA',
-    fechaInicio: '2025-09-10',
-    lat: -31.3400,
-    lng: -64.2200,
-    fechaFin: '2026-10-20',
-    descripcion: 'Sustitución de postes y conductores en áreas rurales con alto índice de fallas.',
-    registros: [
-      {
-        fecha: '2026-01-12',
-        descripcion: 'Inicio de obra con corte de vegetación y movimiento de suelo.',
-        fotos: ['https://via.placeholder.com/150?text=Foto+D']
-      }
-    ]
-  }
-];
+    }
+
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
+
+  const selectedCount = selectedValues.length;
+  const summary = selectedCount === 0
+    ? allLabel
+    : selectedCount === 1
+      ? selectedValues[0]
+      : `${selectedCount} seleccionados`;
+
+  const toggleValue = (value) => {
+    if (selectedValues.includes(value)) {
+      onChange(selectedValues.filter((item) => item !== value));
+      return;
+    }
+    onChange([...selectedValues, value]);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full border border-[#d6d3c8] rounded-lg px-3 py-2 bg-white text-left text-sm hover:bg-[#F9F8F6] transition flex items-center justify-between"
+      >
+        <span className="truncate">
+          <span className="text-gray-500">{label}: </span>
+          <span className="text-[#0f0f0d]">{summary}</span>
+        </span>
+        <span className="text-gray-400 text-xs">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-2 w-full bg-white border border-[#d6d3c8] rounded-lg shadow-md p-2 max-h-64 overflow-auto">
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            className="w-full text-left px-2 py-1.5 rounded text-xs font-mono uppercase tracking-widest text-[#0F7367] hover:bg-[#EAF5F4]"
+          >
+            Limpiar seleccion
+          </button>
+
+          <div className="my-2 border-t border-[#eceae3]" />
+
+          {options.map((option) => {
+            const checked = selectedValues.includes(option);
+            return (
+              <label
+                key={option}
+                className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-[#F9F8F6] text-sm"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleValue(option)}
+                  className="h-4 w-4 accent-[#0F7367]"
+                />
+                <span className="truncate">{option}</span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const OBRAS_DATA = [];
+
+function toPercent(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  if (n >= 0 && n <= 1) return Number((n * 100).toFixed(2));
+  return Number(n.toFixed(2));
+}
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function toDateString(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+
+function mapApiObra(raw, index) {
+  return {
+    id: toNumber(raw?.IdO) || index + 1,
+    nroLp: String(raw?.['Nro Expte. / Lic. Pública'] ?? ''),
+    nombre: String(raw?.Denominación ?? ''),
+    avanceFisico: toPercent(raw?.['Avance Físico']),
+    avanceFinanciero: toPercent(raw?.['Avance Financiero']),
+    desvioCurva: toPercent(raw?.['desvio contra curva ideal']),
+    estado: String(raw?.Estado ?? 'Sin estado'),
+    departamento: String(raw?.['Tipo de obra'] ?? 'Sin departamento'),
+    tipoObra: String(raw?.['Tipo de obra'] ?? ''),
+    prorroga: toNumber(raw?.Prorroga),
+    inspectorAsignado: 'Sin asignar',
+    presupuesto: toNumber(raw?.Costo),
+    contratista: String(raw?.Contratista ?? ''),
+    fechaInicio: toDateString(raw?.['Fecha inicio']),
+    fechaFin: toDateString(raw?.['Fecha fin']),
+    lat: null,
+    lng: null,
+    descripcion: String(raw?.Situación ?? ''),
+    registros: [],
+  };
+}
 
 const ListaObras = () => {
-  const [filtroDepartamento, setFiltroDepartamento] = useState('Todos');
-  const [filtroEstado, setFiltroEstado] = useState('Todos');
+  const [obrasData, setObrasData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filtroDepartamentos, setFiltroDepartamentos] = useState([]);
+  const [filtroEstados, setFiltroEstados] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
 
-  const departamentos = useMemo(() => ['Todos', ...new Set(OBRAS_DATA.map((obra) => obra.departamento))], []);
-  const estados = useMemo(() => ['Todos', ...new Set(OBRAS_DATA.map((obra) => obra.estado))], []);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadObras() {
+      setLoading(true);
+      setError('');
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/obras`);
+        if (!response.ok) {
+          throw new Error(`Error HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const mapped = (Array.isArray(payload?.data) ? payload.data : []).map(mapApiObra);
+
+        if (!cancelled) {
+          OBRAS_DATA.splice(0, OBRAS_DATA.length, ...mapped);
+          setObrasData(mapped);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : 'No se pudo cargar el listado.');
+          OBRAS_DATA.splice(0, OBRAS_DATA.length);
+          setObrasData([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadObras();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const departamentos = useMemo(() => [...new Set(obrasData.map((obra) => obra.departamento))], [obrasData]);
+  const estados = useMemo(() => [...new Set(obrasData.map((obra) => obra.estado))], [obrasData]);
 
   const obrasFiltradas = useMemo(() => {
-    return OBRAS_DATA.filter((obra) => {
-      const coincidenDepartamento = filtroDepartamento === 'Todos' || obra.departamento === filtroDepartamento;
-      const coincidenEstado = filtroEstado === 'Todos' || obra.estado === filtroEstado;
+    return obrasData.filter((obra) => {
+      const coincidenDepartamento = filtroDepartamentos.length === 0 || filtroDepartamentos.includes(obra.departamento);
+      const coincidenEstado = filtroEstados.length === 0 || filtroEstados.includes(obra.estado);
       const coincideBusqueda = obra.nombre.toLowerCase().includes(busqueda.toLowerCase()) || obra.nroLp.includes(busqueda);
 
       const fechaInicio = new Date(obra.fechaInicio);
       const fechaFin = new Date(obra.fechaFin);
-      const desdeOK = !fechaDesde || fechaInicio >= new Date(fechaDesde);
-      const hastaOK = !fechaHasta || fechaFin <= new Date(fechaHasta);
+      const tieneFechaInicio = !Number.isNaN(fechaInicio.getTime());
+      const tieneFechaFin = !Number.isNaN(fechaFin.getTime());
+
+      const desdeOK = !fechaDesde || (tieneFechaInicio && fechaInicio >= new Date(fechaDesde));
+      const hastaOK = !fechaHasta || (tieneFechaFin && fechaFin <= new Date(fechaHasta));
 
       return coincidenDepartamento && coincidenEstado && coincideBusqueda && desdeOK && hastaOK;
     });
-  }, [filtroDepartamento, filtroEstado, busqueda, fechaDesde, fechaHasta]);
+  }, [obrasData, filtroDepartamentos, filtroEstados, busqueda, fechaDesde, fechaHasta]);
 
   const { user, logout } = useAuth();
 
@@ -200,9 +256,18 @@ const ListaObras = () => {
               <Badge variant="default">{user?.rol || 'Sin rol'}</Badge>
             </div>
 
-            <button onClick={logout} className="mb-6 px-4 py-2 bg-[#0F7367] text-white rounded-lg hover:bg-[#0B5A50] transition font-mono text-sm uppercase tracking-widest">
-              Cerrar sesión
-            </button>
+            <div className="mb-6 flex flex-wrap gap-3">
+              <button onClick={logout} className="px-4 py-2 bg-[#0F7367] text-white rounded-lg hover:bg-[#0B5A50] transition font-mono text-sm uppercase tracking-widest">
+                Cerrar sesión
+              </button>
+
+              <Link to="/cargar-archivos" className="px-4 py-2 bg-[#F9F8F6] border border-[#d6d3c8] text-[#0f0f0d] rounded-lg hover:bg-[#EAF5F4] transition font-mono text-sm uppercase tracking-widest">
+                Cargar archivos
+              </Link>
+            </div>
+
+        {loading && <div className="mb-4 rounded-lg border border-[#d6d3c8] bg-[#F9F8F6] p-3 text-sm text-gray-600">Cargando obras desde API...</div>}
+        {!loading && error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">No se pudo obtener datos desde API: {error}</div>}
 
         <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-6">
           <input
@@ -229,26 +294,26 @@ const ListaObras = () => {
             aria-label="Fecha hasta"
           />
 
-          <select value={filtroDepartamento} onChange={(e) => setFiltroDepartamento(e.target.value)} className="border border-[#d6d3c8] rounded-lg p-2 bg-white">
-            {departamentos.map((dep) => (
-              <option key={dep} value={dep}>
-                {dep}
-              </option>
-            ))}
-          </select>
+          <MultiSelectFilter
+            label="Tipo de obra"
+            options={departamentos}
+            selectedValues={filtroDepartamentos}
+            onChange={setFiltroDepartamentos}
+            allLabel="Todos"
+          />
 
-          <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="border border-[#d6d3c8] rounded-lg p-2 bg-white">
-            {estados.map((est) => (
-              <option key={est} value={est}>
-                {est}
-              </option>
-            ))}
-          </select>
+          <MultiSelectFilter
+            label="Estado"
+            options={estados}
+            selectedValues={filtroEstados}
+            onChange={setFiltroEstados}
+            allLabel="Todos"
+          />
 
           <button
             onClick={() => {
-              setFiltroDepartamento('Todos');
-              setFiltroEstado('Todos');
+              setFiltroDepartamentos([]);
+              setFiltroEstados([]);
               setBusqueda('');
               setFechaDesde('');
               setFechaHasta('');
